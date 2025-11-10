@@ -52,10 +52,19 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/latestProducts", async (req, res) => {
+      const cursor = productCollection.find().sort({
+        created_at: -1
+      }).limit(8)
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     //Find
     app.get("/products/:id", async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
+      // const query = { _id: new ObjectId(id) };
+      const query = { _id: id };
       const result = await productCollection.findOne(query);
       res.send(result);
     });
@@ -103,12 +112,28 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+    app.get("/products/bids/:productId", async (req, res) => {
+      const productId = req.params.productId;
+      const query = { product: productId };
+      const cursor =  bidsCollection.find(query).sort({bid_price: -1});
+      const result = await cursor.toArray();
+      res.send(result);
+    })
+    app.get('/bids',async(req,res)=>{
+      const query = {};
+      if(query.email){
+        query.buyer_email = email;
+      }
+      const cursor = bidsCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    })
 
     app.post("/bids", async (req, res) => {
       const newBid = req.body;
       const result = await bidsCollection.insertOne(newBid);
       res.send(result);
-    });
+    })
 
     app.delete("/bids/:id", async (req, res) => {
       const id = req.params.id;
